@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Organizer from './Organizer';
 import Participant from './Participant';
-import LiveScreen from './LiveScreen';
+import LiveScreen from './Livescreen';
 
 function App() {
   const [role, setRole] = useState('');
