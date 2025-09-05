@@ -3,10 +3,10 @@ import socket from './socket';
 
 export default function Organizer() {
     const [roomId, setRoomId] = useState('');
-    const [questions, setQuestions] = useState([
-        { text: "Qual è il cocktail più ordinato?", options: ["Spritz", "Mojito", "Negroni", "Vino"], correct: 0 },
-        { text: "In quale città è nato il Negroni?", options: ["Roma", "Milano", "Firenze", "Venezia"], correct: 2 }
-    ]);
+    const [questions] = useState([
+  { text: "Qual è il cocktail più ordinato?", options: ["Spritz", "Mojito", "Negroni", "Vino"], correct: 0 },
+  { text: "In quale città è nato il Negroni?", options: ["Roma", "Milano", "Firenze", "Venezia"], correct: 2 }
+]);
 
     const createRoom = () => {
         if (!roomId) return alert("Inserisci ID stanza");
