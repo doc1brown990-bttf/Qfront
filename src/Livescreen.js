@@ -1,51 +1,64 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import socket from './socket';
 
-export default function LiveScreen() {
-    const [question, setQuestion] = useState(null);
-    const [timeLeft, setTimeLeft] = useState(10);
+export default function LiveScreen({ roomId }) {
+  const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [canAnswer, setCanAnswer] = useState(false);
 
-    useEffect(() => {
-        socket.on('newQuestion', (q) => {
-            setQuestion(q);
+  useEffect(() => {
+    if (!roomId) return;
 
-            const interval = setInterval(() => {
-                const elapsed = Math.floor((Date.now() - q.startTime) / 1000);
-                const remaining = 10 - elapsed;
-                setTimeLeft(remaining > 0 ? remaining : 0);
-            }, 100);
+    socket.emit('joinRoom', roomId);
 
-            return () => clearInterval(interval);
-        });
+    socket.on('nextQuestion', (question) => {
+      setCurrentQuestion(question);
+      setTimeLeft(10);        // inizia countdown 10 secondi
+      setCanAnswer(true);
+    });
 
-        socket.on('closeQuestion', () => {
-            setTimeLeft(0);
-        });
-    }, []);
+    return () => socket.off('nextQuestion');
+  }, [roomId]);
 
-    if (!question) return <div style={{ textAlign: 'center', marginTop: '50px', fontSize: '2rem' }}>In attesa di iniziare...</div>;
-
-    return (
-        <div style={{ textAlign: 'center', fontSize: '2rem' }}>
-            <h1>{question.text}</h1>
-            <div style={{ margin: '20px' }}>
-                {question.options.map((opt, idx) => (
-                    <div key={idx}
-                        style={{
-                            padding: '10px',
-                            margin: '5px',
-                            backgroundColor: idx === question.correct ? 'orange' : 'lightgray',
-                            borderRadius: '5px',
-                            width: '50%',
-                            marginLeft: 'auto',
-                            marginRight: 'auto'
-                        }}
-                    >
-                        {opt}
-                    </div>
-                ))}
-            </div>
-            <h2>Tempo rimanente: {timeLeft}s</h2>
-        </div>
-    );
+  // countdown
+  useEffect(() => {
+    if (timeLeft <= 0) {
+      setCanAnswer(false);
+      return;
     }
+    const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [timeLeft]);
+
+  const handleAnswer = (optionIndex) => {
+    if (!canAnswer) return;
+    socket.emit('answer', roomId, { user: socket.id, answer: optionIndex });
+    setCanAnswer(false); // blocca risposta dopo invio
+  };
+
+  return (
+    <div style={{ textAlign: 'center', marginTop: '50px' }}>
+      <h2>Live Screen</h2>
+      {currentQuestion ? (
+        <>
+          <p>{currentQuestion.text}</p>
+          <p>Tempo rimasto: {timeLeft}s</p>
+          <div>
+            {currentQuestion.options.map((opt, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleAnswer(idx)}
+                disabled={!canAnswer}
+                style={{ margin: '5px' }}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        </>
+      ) : (
+        <p>In attesa della prossima domanda...</p>
+      )}
+    </div>
+  );
+}
