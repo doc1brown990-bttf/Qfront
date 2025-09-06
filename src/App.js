@@ -1,25 +1,24 @@
-import React, { useState } from 'react';
-import Organizer from './Organizer';
-import Participant from './Participant';
-import LiveScreen from './Livescreen';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import LiveOrganizer from "./LiveOrganizer";
 
-function App() {
-  const [role, setRole] = useState('');
+export default function App() {
+  return (
+    <Router>
+      <div style={{ textAlign: "center", marginTop: "50px" }}>
+        <h1>🍸 Quiz Cocktail Live</h1>
+        <p>Scegli come vuoi entrare:</p>
+        <nav style={{ margin: "20px" }}>
+          <Link to="/organizer" style={{ margin: "10px" }}>👤 Organizzatore</Link>
+          <Link to="/participant" style={{ margin: "10px" }}>🙋 Partecipante</Link>
+        </nav>
 
-  if (!role) {
-    return (
-      <div style={{ textAlign: 'center', marginTop: '50px' }}>
-        <h2>Seleziona ruolo:</h2>
-        <button onClick={() => setRole('organizer')}>Organizzatore</button>
-        <button onClick={() => setRole('participant')}>Partecipante</button>
-        <button onClick={() => setRole('live')}>Schermo Live</button>
+        <Routes>
+          <Route path="/organizer" element={<LiveOrganizer isOrganizer={true} />} />
+          <Route path="/participant" element={<LiveOrganizer />} />
+          <Route path="/" element={<p>Benvenuto! Seleziona un ruolo.</p>} />
+        </Routes>
       </div>
-    );
-  }
-
-  if (role === 'organizer') return <Organizer />;
-  if (role === 'participant') return <Participant />;
-  if (role === 'live') return <LiveScreen />;
+    </Router>
+  );
 }
-
-export default App;
